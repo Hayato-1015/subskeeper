@@ -1,0 +1,142 @@
+/* 起動時の演出（順番は Splash.jsx を参照） */
+
+.splash {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  background: #f4f4f2;
+  color: #111111;
+  cursor: pointer;
+  /* フェードアウトの長さは Splash.jsx の TIMING.exit（--exit）に合わせる */
+  transition:
+    opacity var(--exit, 1.4s) ease-in-out,
+    visibility var(--exit, 1.4s);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .splash {
+    background: #141413;
+    color: #f4f4f2;
+  }
+}
+
+.splash.leave {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.splash-mark {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.splash-logo {
+  flex-shrink: 0;
+  /* 枠なしの稲妻なので、形に沿った影にする */
+  filter: drop-shadow(0 8px 18px rgb(76 69 226 / 0.3));
+}
+
+/* 文字の入る箱。幅が広がるぶん、中央揃えのロゴが左へ寄る */
+.splash-name-box {
+  display: block;
+  overflow: hidden;
+  margin-left: 0;
+}
+
+.splash:not(.logo) .splash-name-box {
+  margin-left: 14px;
+}
+
+.splash-name {
+  display: inline-flex;
+  align-items: center;
+  font-size: clamp(30px, 8vw, 44px);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  white-space: nowrap;
+}
+
+/* 幅を測るだけ。画面には出さない */
+.splash-measure {
+  position: absolute;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.splash-caret {
+  display: inline-block;
+  width: 3px;
+  height: 0.9em;
+  margin-left: 4px;
+  border-radius: 2px;
+  background: currentColor;
+}
+
+/* 演出は「動きを減らす」設定でも順番どおりに再生する（短く、点滅や大きな移動はない） */
+
+/* 1. ロゴがふわっと浮き出る */
+.splash-logo {
+  animation: splash-rise 1s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+/* 2. ロゴが左へ寄る（箱の幅と余白をなめらかに広げる） */
+.splash-name-box {
+  transition:
+    width 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+    margin-left 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 3. 打ち終わったらカーソルを点滅（打っている間は点けたまま） */
+.splash-caret:not(.typing) {
+  animation: splash-blink 0.9s steps(1) infinite;
+}
+
+/* 4. 少し上に動きながら消える */
+.splash.leave .splash-mark {
+  transform: translateY(-8px);
+  transition: transform var(--exit, 1.4s) ease-in-out;
+}
+
+/* 「動きを減らす」設定：浮き上がり・縮小をやめて、ぼかしからのフェードだけにする */
+@media (prefers-reduced-motion: reduce) {
+  .splash-logo {
+    animation-name: splash-fade;
+  }
+
+  .splash.leave .splash-mark {
+    transform: none;
+  }
+}
+
+@keyframes splash-rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.9);
+    filter: blur(10px) drop-shadow(0 8px 18px rgb(76 69 226 / 0));
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: blur(0) drop-shadow(0 8px 18px rgb(76 69 226 / 0.3));
+  }
+}
+
+@keyframes splash-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+@keyframes splash-fade {
+  from {
+    opacity: 0;
+    filter: blur(10px) drop-shadow(0 8px 18px rgb(76 69 226 / 0));
+  }
+  to {
+    opacity: 1;
+    filter: blur(0) drop-shadow(0 8px 18px rgb(76 69 226 / 0.3));
+  }
+}
