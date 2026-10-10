@@ -1,0 +1,17 @@
+{
+  "name": "subskeeper",
+  "private": true,
+  "workspaces": [
+    "shared",
+    "backend",
+    "frontend",
+    "infra"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w frontend",
+    "build": "npm run build -w frontend",
+    "deploy": "npm test && npm run build && npm run deploy -w infra",
+    "test": "npm test -w shared",
+    "lint": "npm run lint -w frontend"
+  }
+}

@@ -1,0 +1,21 @@
+# 個人用メモ（GitHub に上げない）
+docs/aws-setup.md
+
+# 認証情報・環境変数
+.env
+.env.*
+*.pem
+
+# 依存関係・ビルド成果物
+node_modules/
+dist/
+.aws-sam/
+cdk.out/
+
+# OS・エディタ
+.DS_Store
+Thumbs.db
+.vscode/
+
+# デプロイ出力
+infra/cdk-outputs.json

@@ -1,0 +1,14 @@
+{
+  "name": "backend",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "dependencies": {
+    "@subskeeper/shared": "*",
+    "aws-jwt-verify": "^5.2.1"
+  },
+  "devDependencies": {
+    "@aws-sdk/client-dynamodb": "^3.1149.0",
+    "@aws-sdk/lib-dynamodb": "^3.1149.0"
+  }
+}
