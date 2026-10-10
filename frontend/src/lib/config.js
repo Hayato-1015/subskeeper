@@ -5,6 +5,8 @@ export const config = {
   region: import.meta.env.VITE_AWS_REGION,
   userPoolClientId: import.meta.env.VITE_USER_POOL_CLIENT_ID,
   apiUrl: import.meta.env.VITE_API_URL,
+  // 'test' | 'prod'（テスト環境なら画面に「テスト環境」と出す）
+  stage: import.meta.env.VITE_STAGE,
 }
 
 export async function loadConfig() {

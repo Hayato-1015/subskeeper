@@ -8,7 +8,7 @@ import Splash from './components/Splash.jsx'
 import SubscriptionForm from './components/SubscriptionForm.jsx'
 import SubscriptionList from './components/SubscriptionList.jsx'
 import { AuthError, currentUser, signOut } from './lib/auth.js'
-import { isConfigured } from './lib/config.js'
+import { config, isConfigured } from './lib/config.js'
 import { loadProfile } from './lib/settings.js'
 import {
   createSubscription,
@@ -83,6 +83,7 @@ export default function App() {
     <>
       {screen}
       {showSplash && <Splash onDone={finishSplash} />}
+      {config.stage === 'test' && <div className="stage-badge">テスト環境</div>}
     </>
   )
 }

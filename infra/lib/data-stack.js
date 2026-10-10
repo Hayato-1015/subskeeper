@@ -10,17 +10,21 @@ const INDEX_CAPACITY = { readCapacity: 1, writeCapacity: 1 }
 // データ設計は docs/data-design.md を参照
 export class DataStack extends Stack {
   constructor(scope, id, props) {
-    // データを持つスタックなので誤削除を防ぐ
-    super(scope, id, { ...props, terminationProtection: true })
+    const { stage, ...rest } = props
+    // 本番はデータを持つので誤削除を防ぐ（テストは作り直せるので消せるようにする）
+    super(scope, id, { ...rest, terminationProtection: stage.protectData })
+
+    // 本番は最初に作った名前のまま（subskeeper）、テストは subskeeper-test
+    this.tableName = `subskeeper${stage.suffix}`
 
     this.table = new Table(this, 'Table', {
-      tableName: 'subskeeper',
+      tableName: this.tableName,
       partitionKey: { name: 'pk', type: AttributeType.STRING },
       sortKey: { name: 'sk', type: AttributeType.STRING },
       billingMode: BillingMode.PROVISIONED,
       ...TABLE_CAPACITY,
-      deletionProtection: true,
-      removalPolicy: RemovalPolicy.RETAIN,
+      deletionProtection: stage.protectData,
+      removalPolicy: stage.protectData ? RemovalPolicy.RETAIN : RemovalPolicy.DESTROY,
       // PITR は有料のため OFF
       pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: false },
     })

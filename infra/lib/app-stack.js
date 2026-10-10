@@ -34,11 +34,12 @@ const frontendDist = path.join(root, 'frontend/dist')
 export class AppStack extends Stack {
   constructor(scope, id, props) {
     super(scope, id, props)
-    const { tableName, devOrigins } = props
+    const { tableName, stage } = props
+    const { suffix } = stage
 
     // ---- 認証（Cognito）----
     const userPool = new UserPool(this, 'UserPool', {
-      userPoolName: 'subskeeper-users',
+      userPoolName: `subskeeper-users${suffix}`,
       // 一番安いプラン（独自ログイン画面なので Essentials の機能は不要）
       featurePlan: FeaturePlan.LITE,
       selfSignUpEnabled: true,
@@ -49,11 +50,11 @@ export class AppStack extends Stack {
       accountRecovery: AccountRecovery.EMAIL_ONLY,
       userVerification: {
         emailStyle: VerificationEmailStyle.CODE,
-        emailSubject: 'SubsKeeper 確認コード',
+        emailSubject: suffix ? `[${stage.label}] SubsKeeper 確認コード` : 'SubsKeeper 確認コード',
         emailBody: 'SubsKeeper の確認コードは {####} です。',
       },
-      // 利用者のアカウントを消さないよう残す
-      removalPolicy: RemovalPolicy.RETAIN,
+      // 本番は利用者のアカウントを消さないよう残す
+      removalPolicy: stage.protectData ? RemovalPolicy.RETAIN : RemovalPolicy.DESTROY,
     })
 
     const userPoolClient = new UserPoolClient(this, 'WebClient', {
@@ -121,7 +122,7 @@ export class AppStack extends Stack {
     })
 
     const logGroup = new LogGroup(this, 'ApiLogs', {
-      logGroupName: '/subskeeper/api',
+      logGroupName: `/subskeeper${suffix}/api`,
       retention: RetentionDays.TWO_WEEKS,
       removalPolicy: RemovalPolicy.DESTROY,
     })
@@ -152,7 +153,8 @@ export class AppStack extends Stack {
     const apiUrl = apiFn.addFunctionUrl({
       authType: FunctionUrlAuthType.NONE,
       cors: {
-        allowedOrigins: [siteUrl, ...devOrigins],
+        // ローカル開発（npm run dev）から呼べるのはテスト環境だけ
+        allowedOrigins: [siteUrl, ...stage.devOrigins],
         allowedMethods: [HttpMethod.GET, HttpMethod.POST, HttpMethod.PUT, HttpMethod.DELETE],
         allowedHeaders: ['authorization', 'content-type'],
         maxAge: Duration.hours(1),
@@ -171,6 +173,7 @@ export class AppStack extends Stack {
           region: this.region,
           userPoolClientId: userPoolClient.userPoolClientId,
           apiUrl: apiUrl.url,
+          stage: stage.name,
         }),
       ],
       // デプロイのたびにキャッシュを消す（月1,000パスまで無料）
@@ -179,6 +182,7 @@ export class AppStack extends Stack {
       memoryLimit: 256,
     })
 
+    new CfnOutput(this, 'Stage', { value: stage.name })
     new CfnOutput(this, 'SiteUrl', { value: siteUrl })
     new CfnOutput(this, 'Region', { value: this.region })
     new CfnOutput(this, 'UserPoolId', { value: userPool.userPoolId })
