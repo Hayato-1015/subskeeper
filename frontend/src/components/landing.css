@@ -1,0 +1,435 @@
+/* ログイン前のランディングページ */
+
+.landing {
+  --lp-bg: #f4f4f2;
+  --lp-ink: #111111;
+  --lp-card: rgb(255 255 255 / 0.82);
+  background: var(--lp-bg);
+  color: var(--lp-ink);
+  /* hidden だと sticky（Statement の固定表示）が効かないので clip */
+  overflow-x: clip;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .landing {
+    --lp-bg: #141413;
+    --lp-ink: #f4f4f2;
+    --lp-card: rgb(32 32 30 / 0.78);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html:has(.landing) {
+    scroll-behavior: smooth;
+  }
+}
+
+/* ---- ヒーロー ---- */
+.hero {
+  position: relative;
+  min-height: 100svh;
+  /* 中の重なり（z-index）をこのセクション内で完結させる */
+  isolation: isolate;
+  background: var(--lp-bg);
+  overflow: hidden;
+}
+
+.lp-header {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 3;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+}
+
+.lp-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.lp-login {
+  color: inherit;
+  font-size: 0.875rem;
+  text-decoration: none;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  padding: 6px 16px;
+  background: var(--lp-card);
+  backdrop-filter: blur(8px);
+}
+
+/* ---- ページ全体の背景の 3DCG（Hero3D.jsx）。画面に固定し、描けたらふわっと出す ---- */
+.lp-bg3d {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  /* スマホのアドレスバーの出入りで描き直しが起きないよう、大きい方の高さに固定 */
+  height: 100lvh;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 1.2s ease;
+}
+
+.lp-bg3d.ready {
+  opacity: 1;
+}
+
+.lp-bg3d canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* 3DCG の上に中身を重ねる。背景色は 3DCG 側が描く（明るい → 黒）ので各セクションは透明に */
+.landing > section,
+.landing > footer {
+  position: relative;
+  z-index: 1;
+}
+
+.landing.has-3d .hero,
+.landing.has-3d .lp-statement,
+.landing.has-3d .lp-start,
+.landing.has-3d .lp-footer {
+  background: transparent;
+}
+
+/* 渦（3DCG が使えないときの代わり） */
+.hero-art {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.swirl {
+  position: absolute;
+  top: -22%;
+  right: -14%;
+  width: clamp(560px, 78vw, 1180px);
+  height: auto;
+}
+
+
+
+
+
+
+/* 見出し：3DCG の手前に通常の文字色で置く */
+.hero-copy {
+  position: absolute;
+  z-index: 2;
+  color: var(--lp-ink);
+  left: clamp(20px, 3vw, 40px);
+  right: 140px;
+  bottom: clamp(28px, 5vh, 56px);
+}
+
+.hero-title {
+  margin: 0;
+  font-size: clamp(64px, 12.5vw, 200px);
+  font-weight: 500;
+  line-height: 0.88;
+  letter-spacing: -0.045em;
+}
+
+.hero-title span {
+  display: inline-block;
+}
+
+.hero-lead {
+  margin: 18px 0 0;
+  font-size: clamp(0.875rem, 1.4vw, 1.0625rem);
+  line-height: 1.8;
+}
+
+/* 丸ボタン「はじめる」：スクロールしても右下に固定（どのセクションよりも手前） */
+.hero-circle {
+  position: fixed;
+  z-index: 10;
+  right: calc(clamp(20px, 3vw, 40px) + env(safe-area-inset-right));
+  bottom: calc(clamp(28px, 5vh, 56px) + env(safe-area-inset-bottom));
+  display: grid;
+  place-items: center;
+  width: 104px;
+  height: 104px;
+  border-radius: 50%;
+  color: var(--lp-ink);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  background: var(--lp-card);
+  backdrop-filter: blur(8px);
+  transition: background 0.3s, color 0.3s;
+}
+
+.hero-circle svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.hero-circle circle {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.2;
+  stroke-dasharray: 302;
+}
+
+.hero-circle:hover {
+  background: var(--lp-ink);
+  color: var(--lp-bg);
+}
+
+/* ---- 黒い画面のメッセージ（Statement.jsx） ---- */
+.lp-statement {
+  /* 画面約 2.5 枚分の高さ。この間、中の文字は画面中央に固定される */
+  height: 250svh;
+  background: #0b0b0b;
+  color: #f4f4f2;
+}
+
+.lp-statement-sticky {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: 0 24px;
+}
+
+.lp-statement-text {
+  max-width: 1100px;
+  margin: 0;
+  font-size: clamp(40px, 8vw, 120px);
+  font-weight: 500;
+  line-height: 1.02;
+  letter-spacing: -0.04em;
+  text-align: center;
+}
+
+.lp-word {
+  /* --p（0〜1）は Statement.jsx がスクロール位置から入れる */
+  --p: 0;
+  display: inline-block;
+  opacity: var(--p);
+  transform: translateY(calc((1 - var(--p)) * 0.4em));
+  filter: blur(calc((1 - var(--p)) * 8px));
+  will-change: opacity, transform, filter;
+}
+
+/* 最後の「Reset.」だけ渦と同じグラデーション */
+.lp-word.accent {
+  background: linear-gradient(100deg, #5b6cff, #a77bff 50%, #ff9a4d);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ---- 特徴（黒い背景。フッターまで続ける） ---- */
+.lp-start,
+.lp-footer {
+  /* このセクション内の文字色は白系に切り替える */
+  --lp-ink: #f4f4f2;
+  background: #0b0b0c;
+  color: var(--lp-ink);
+}
+
+.lp-start {
+  /* 背景は画面幅いっぱい、中身は 720px の幅に収める */
+  padding: 96px max(20px, calc((100% - 720px) / 2)) 64px;
+}
+
+.lp-features {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 28px;
+}
+
+.lp-features li {
+  border-top: 1px solid color-mix(in srgb, var(--lp-ink) 18%, transparent);
+  padding-top: 16px;
+}
+
+.lp-num {
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+  color: color-mix(in srgb, var(--lp-ink) 55%, transparent);
+}
+
+.lp-features h2 {
+  margin: 6px 0 6px;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.lp-features p {
+  margin: 0;
+  line-height: 1.8;
+  color: color-mix(in srgb, var(--lp-ink) 72%, transparent);
+}
+
+
+.auth-card {
+  max-width: 420px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* ---- ログイン画面（#login） ---- */
+.login-page {
+  position: relative;
+  min-height: 100svh;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+/* トップページと同じ渦を右上に小さく、薄く */
+.login-art {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.35;
+}
+
+.login-art .swirl {
+  top: -30%;
+  right: -35%;
+  width: clamp(520px, 70vw, 980px);
+}
+
+.login-back {
+  color: inherit;
+  font-size: 0.875rem;
+  text-decoration: none;
+  padding: 6px 4px;
+}
+
+.login-main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 96px 20px 48px;
+}
+
+.login-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.login-page .auth-card {
+  box-shadow: 0 16px 48px rgb(20 20 60 / 0.1);
+}
+
+.lp-footer {
+  padding: 32px 20px;
+  text-align: center;
+  font-size: 0.75rem;
+  color: color-mix(in srgb, var(--lp-ink) 55%, transparent);
+}
+
+/* ---- PC ---- */
+@media (min-width: 900px) {
+  .lp-start {
+    padding-top: 128px;
+    padding-bottom: 96px;
+  }
+
+  .lp-features {
+    gap: 36px;
+  }
+
+  .hero-title span + span {
+    margin-left: 0.04em;
+  }
+}
+
+/* ---- スマホ ---- */
+@media (max-width: 899px) {
+  .swirl {
+    top: -6%;
+    right: -62vw;
+    width: 160vw;
+  }
+
+  .hero-copy {
+    right: 20px;
+    bottom: 150px;
+  }
+
+  .hero-title span {
+    display: block;
+  }
+
+  .hero-circle {
+    width: 92px;
+    height: 92px;
+  }
+
+}
+
+/* ---- 動き ----
+   OS の「動きを減らす」設定に関係なく動かす */
+.swirl-spin {
+  animation: lp-spin 48s linear infinite;
+}
+
+.swirl-spin-reverse {
+  animation: lp-spin 64s linear infinite reverse;
+}
+
+.swirl-breathe {
+  animation: lp-breathe 14s ease-in-out infinite alternate;
+}
+
+
+.hero-circle circle {
+  animation: lp-draw 3.8s ease-in-out infinite;
+}
+
+
+
+@keyframes lp-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes lp-breathe {
+  from {
+    transform: scale(0.96) rotate(-4deg);
+  }
+  to {
+    transform: scale(1.04) rotate(6deg);
+  }
+}
+
+
+@keyframes lp-draw {
+  0% {
+    stroke-dashoffset: 302;
+  }
+  50% {
+    stroke-dashoffset: 0;
+  }
+  100% {
+    stroke-dashoffset: -302;
+  }
+}

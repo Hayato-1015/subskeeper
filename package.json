@@ -10,7 +10,9 @@
   "scripts": {
     "dev": "npm run dev -w frontend",
     "build": "npm run build -w frontend",
-    "deploy": "npm test && npm run build && npm run deploy -w infra",
+    "deploy": "node -e \"console.error('環境を指定してください: npm run deploy:test（テスト） / npm run deploy:prod（本番）');process.exit(1)\"",
+    "deploy:test": "node infra/scripts/check-branch.js test && npm test && npm run build && npm run deploy:test -w infra",
+    "deploy:prod": "node infra/scripts/check-branch.js prod && npm test && npm run build && npm run deploy:prod -w infra",
     "test": "npm test -w shared",
     "lint": "npm run lint -w frontend"
   }

@@ -4,9 +4,11 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "synth": "cdk synth --strict --profile subskeeper",
-    "diff": "cdk diff --profile subskeeper",
-    "deploy": "cdk deploy --all --profile subskeeper --outputs-file cdk-outputs.json && npm run env",
+    "synth": "cdk synth --strict -c stage=test --profile subskeeper",
+    "diff:test": "cdk diff -c stage=test --profile subskeeper",
+    "diff:prod": "cdk diff -c stage=prod --profile subskeeper",
+    "deploy:test": "cdk deploy --all -c stage=test --profile subskeeper --outputs-file cdk-outputs.test.json && npm run env",
+    "deploy:prod": "cdk deploy --all -c stage=prod --profile subskeeper --outputs-file cdk-outputs.prod.json",
     "env": "node scripts/write-frontend-env.js"
   },
   "devDependencies": {
